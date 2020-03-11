@@ -6,6 +6,11 @@ stdenv.mkDerivation rec {
 
   src = ./.;
 
+  installPhase = ''
+    mkdir -p $out/bin/
+    cp git-browse-link $out/bin/
+  '';
+
   meta = with stdenv.lib; {
     description = "TODO: fill me in";
     homepage = https://github.com/eraserhd/git-browse-link;

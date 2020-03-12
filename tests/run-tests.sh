@@ -51,12 +51,17 @@ t() {
         esac
     done
 
+    actualOutput=$(eval "$TEST_COMMAND")
+    if [ "$TEST_OUTPUT" != "$actualOutput" ]; then
+        fail "$(printf ' expected: %s\n   actual: %s' "$TEST_OUTPUT" "$actualOutput")"
+    fi
+
     if [ $TEST_OK == true ]; then
         printf 'ok %d - %s\n' $TEST_COUNT "$TEST_DESCRIPTION"
     else
         printf 'not ok %d - %s\n' $TEST_COUNT "$TEST_DESCRIPTION"
         if [ -n "$TEST_ERROR" ]; then
-            printf '# %s\n' "$TEST_ERROR"
+            printf %s\\n "$TEST_ERROR" |sed -e 's/^/# /'
         fi
         TEST_FAILURES=$(( TEST_FAILURES + 1 ))
     fi
@@ -69,7 +74,7 @@ summarize() {
 
 t 'translates git@github.com origins into github browse links' \
     -remote origin git@github.com:foo/bar.git \
-    -command 'git browse-link tests/repo/dir/file.txt' \
-    -output 'https://github.com/foo/bar/blob/1111/dir/file.txt'
+    -command 'git browse-link repo/dir/file.txt' \
+    -output 'https://github.com/foo/bar/blob/ce1ced46695def162cadf35f7f02df67cd215c60/dir/file.txt'
 
 summarize

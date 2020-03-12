@@ -3,6 +3,11 @@
 TEST_COUNT=0
 TEST_FAILURES=0
 
+setUpFixtures() {
+    rm -rf origin/ repo/
+    tar -xzf fixtures.tgz
+}
+
 fail() {
     if [ $TEST_OK == false ]; then
         return
@@ -20,6 +25,8 @@ t() {
     TEST_ERROR=''
     TEST_COMMAND=''
     TEST_OUTPUT=''
+
+    setUpFixtures
 
     while [ $# -gt 0 ]; do
         case "$1" in

@@ -5,11 +5,11 @@ let
 in {
   test = pkgs.stdenv.mkDerivation {
     name = "tests";
-    src = ./.;
-    buildInputs = [ pkgs.elvish ];
+    src = ./tests;
+    buildInputs = [ pkgs.git git-browse-link ];
 
     buildPhase = ''
-      ${pkgs.elvish}/bin/elvish run-tests.elv
+      ./run-tests.sh
     '';
     installPhase = ''
       touch $out

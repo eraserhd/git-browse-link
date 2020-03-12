@@ -31,7 +31,8 @@ t() {
     while [ $# -gt 0 ]; do
         case "$1" in
         -remote)
-            shift 2
+            ( cd repo ; git remote set-url "$2" "$3" )
+            shift 3
             ;;
         -command)
             TEST_COMMAND="$2"
@@ -65,7 +66,7 @@ summarize() {
 }
 
 t 'translates git@github.com origins into github browse links' \
-    -remote origin=git@github.com:foo/bar.git \
+    -remote origin git@github.com:foo/bar.git \
     -command 'git browse-link tests/repo/dir/file.txt' \
     -output 'https://github.com/foo/bar/blob/1111/dir/file.txt'
 

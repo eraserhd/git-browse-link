@@ -7,12 +7,7 @@ in {
     name = "tests";
     src = ./tests;
     buildInputs = [ pkgs.git git-browse-link ];
-
-    buildPhase = ''
-      ./run-tests.sh
-    '';
-    installPhase = ''
-      touch $out
-    '';
+    buildPhase = "./run-tests.sh";
+    installPhase = "touch $out";
   };
 }

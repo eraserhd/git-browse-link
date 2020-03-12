@@ -1,11 +1,13 @@
 #!/bin/sh
 
+set -e
+
 TEST_COUNT=0
 TEST_FAILURES=0
 
 setUpFixtures() {
     rm -rf origin/ repo/
-    tar -xzf fixtures.tgz
+    tar -xzf fixtures.tar.gz
 }
 
 fail() {

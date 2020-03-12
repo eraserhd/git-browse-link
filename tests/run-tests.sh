@@ -31,7 +31,7 @@ t() {
             shift 2
             ;;
         -output)
-            TEST_OUTPUT="$3"
+            TEST_OUTPUT="$2"
             shift 2
             ;;
         *)

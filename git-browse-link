@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 #
 # Syntax is `git browse-link FILE [POSITION]`
 #
@@ -7,15 +7,15 @@ PREFERRED_REMOTES='upstream origin'
 
 isReachable() {
     # $1=from, $2=to
-    [ "$(git merge-base $1 $2)" == "$(git rev-parse --verify $1)" ]
+    [ "$(git merge-base "$1" "$2")" = "$(git rev-parse --verify "$1")" ]
 }
 
 reachableFromRemote() {
     # $1=head, $2=remote
     for reachableFromRemote_branch in $(git branch -r); do
         case "$reachableFromRemote_branch" in
-        "$remote"/*)
-            if isReachable $head $reachableFromRemote_branch; then
+        "$2"/*)
+            if isReachable "$1" "$reachableFromRemote_branch"; then
                 return 0
             fi
             ;;
@@ -26,10 +26,9 @@ reachableFromRemote() {
 
 bestRemote() {
     # $1=head
-    local otherRemote
-    for otherRemote in $PREFERRED_REMOTES $(git remote); do
-        if reachableFromRemote "$1" "$otherRemote"; then
-            printf %s\\n "$otherRemote"
+    for bestRemote_remote in $PREFERRED_REMOTES $(git remote); do
+        if reachableFromRemote "$1" "$bestRemote_remote"; then
+            printf %s\\n "$bestRemote_remote"
             return 0
         fi
     done
@@ -37,15 +36,13 @@ bestRemote() {
 }
 
 originUrl() {
-    local head=$(git rev-parse HEAD)
-
-    local bestRemote=$(bestRemote $head)
-    if [ -z "$bestRemote" ]; then
+    originUrl_head=$(git rev-parse HEAD)
+    originUrl_bestRemote=$(bestRemote "$originUrl_head")
+    if [ -z "$originUrl_bestRemote" ]; then
         printf 'Cannot find a reachable remote.\n' >&2
         exit 2
     fi
-
-    git remote get-url "$bestRemote"
+    git remote get-url "$originUrl_bestRemote"
 }
 
 makeBrowseUrlPrefix() {
@@ -62,31 +59,30 @@ makePositionAnchor() {
     if [ -z "$1" ]; then
         return 0
     fi
-    local startLine=$(printf %s\\n "$1" |sed -ne 's/^\([0-9]*\)\..*$/\1/p')
-    local endLine=$(printf %s\\n "$1" |sed -ne 's/^.*,\([0-9]*\)\..*$/\1/p')
-    if [ $startLine -eq $endLine ]; then
-        printf '#L%d\n' "$startLine"
+    makePositionAnchor_startLine=$(printf %s\\n "$1" |sed -ne 's/^\([0-9]*\)\..*$/\1/p')
+    makePositionAnchor_endLine=$(printf %s\\n "$1" |sed -ne 's/^.*,\([0-9]*\)\..*$/\1/p')
+    if [ "$makePositionAnchor_startLine" -eq "$makePositionAnchor_endLine" ]; then
+        printf '#L%d\n' "$makePositionAnchor_startLine"
         return 0
     fi
-    if [ $startLine -gt $endLine ]; then
-        local tmp=$startLine
-        startLine=$endLine
-        endLine=$tmp
+    if [ "$makePositionAnchor_startLine" -gt "$makePositionAnchor_endLine" ]; then
+        makePositionAnchor_tmp="$makePositionAnchor_startLine"
+        makePositionAnchor_startLine="$makePositionAnchor_endLine"
+        makePositionAnchor_endLine="$makePositionAnchor_tmp"
     fi
-    printf '#L%d-L%d\n' "$startLine" "$endLine"
+    printf '#L%d-L%d\n' "$makePositionAnchor_startLine" "$makePositionAnchor_endLine"
 }
 
 makeGitBrowseLink() {
-    local head=$(git rev-parse HEAD)
-    local prefix="$(makeBrowseUrlPrefix "$(originUrl)")"
-    if [ -z "$prefix" ]; then
-        printf 'git-browse-link: cannot find a remote with commit %s\n' "$head" >&2
+    makeGitBrowseLink_head="$(git rev-parse HEAD)"
+    makeGitBrowseLink_prefix="$(makeBrowseUrlPrefix "$(originUrl)")"
+    if [ -z "$makeGitBrowseLink_prefix" ]; then
+        printf 'git-browse-link: cannot find a remote with commit %s\n' "$makeGitBrowseLink_head" >&2
         return 3
     fi
-
     printf %s/%s/%s%s\\n \
-        "$prefix" \
-        "$head" \
+        "$makeGitBrowseLink_prefix" \
+        "$makeGitBrowseLink_head" \
         "$(git ls-files --full-name "$FILENAME")" \
         "$(makePositionAnchor "$POSITION")"
 }
@@ -102,7 +98,7 @@ if [ -d "$FILENAME" ]; then
     return 1
 fi
 
-cd "$(dirname "$FILENAME")"
+cd "$(dirname "$FILENAME")" || exit $?
 FILENAME="$(basename "$FILENAME")"
 
 makeGitBrowseLink

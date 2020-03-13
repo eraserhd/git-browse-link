@@ -78,16 +78,16 @@ makePositionAnchor() {
 makeGitBrowseLink() {
     local head=$(git rev-parse HEAD)
     local prefix="$(makeBrowseUrlPrefix "$(originUrl)")"
-    local rootedFilename="$(git ls-files --full-name "$FILENAME")"
-
     if [ -z "$prefix" ]; then
         printf 'git-browse-link: cannot find a remote with commit %s\n' "$head" >&2
         return 3
     fi
 
-    local anchor="$(makePositionAnchor "$POSITION")"
-
-    printf %s/%s/%s%s\\n "$prefix" "$head" "$rootedFilename" "$anchor"
+    printf %s/%s/%s%s\\n \
+        "$prefix" \
+        "$head" \
+        "$(git ls-files --full-name "$FILENAME")" \
+        "$(makePositionAnchor "$POSITION")"
 }
 
 FILENAME="$1"

@@ -76,22 +76,9 @@ makePositionAnchor() {
 }
 
 makeGitBrowseLink() {
-    if [ ! -e "$FILENAME" ]; then
-        printf 'git-browse-link: %s: No such file or directory\n' "$FILENAME" >&2
-        return 1
-    fi
-    if [ -d "$FILENAME" ]; then
-        printf 'git-browse-link: %s is a directory\n' "$FILENAME" >&2
-        return 1
-    fi
-
-    local originalDirectory="$(pwd)"
-    cd "$(dirname "$FILENAME")"
-
     local head=$(git rev-parse HEAD)
     local prefix="$(makeBrowseUrlPrefix "$(originUrl)")"
-    local rootedFilename="$(git ls-files --full-name "$(basename "$FILENAME")")"
-    cd "$originalDirectory"
+    local rootedFilename="$(git ls-files --full-name "$FILENAME")"
 
     if [ -z "$prefix" ]; then
         printf 'git-browse-link: cannot find a remote with commit %s\n' "$head" >&2
@@ -105,5 +92,17 @@ makeGitBrowseLink() {
 
 FILENAME="$1"
 POSITION="$2"
+if [ ! -e "$FILENAME" ]; then
+    printf 'git-browse-link: %s: No such file or directory\n' "$FILENAME" >&2
+    return 1
+fi
+if [ -d "$FILENAME" ]; then
+    printf 'git-browse-link: %s is a directory\n' "$FILENAME" >&2
+    return 1
+fi
+
+cd "$(dirname "$FILENAME")"
+FILENAME="$(basename "$FILENAME")"
+
 makeGitBrowseLink
 exit $?

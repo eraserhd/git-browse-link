@@ -78,23 +78,21 @@ makePositionAnchor() {
 }
 
 makeGitBrowseLink() {
-    local filename="$1" position="$2"
-
-    if [[ ! -e "$filename" ]]; then
-        printf 'git-browse-link: %s: No such file or directory\n' "$filename" >&2
+    if [[ ! -e "$FILENAME" ]]; then
+        printf 'git-browse-link: %s: No such file or directory\n' "$FILENAME" >&2
         return 1
     fi
-    if [[ -d "$filename" ]]; then
-        printf 'git-browse-link: %s is a directory\n' "$filename" >&2
+    if [[ -d "$FILENAME" ]]; then
+        printf 'git-browse-link: %s is a directory\n' "$FILENAME" >&2
         return 1
     fi
 
     local originalDirectory="$(pwd)"
-    cd "$(dirname "$filename")"
+    cd "$(dirname "$FILENAME")"
 
     local head=$(git rev-parse HEAD)
-    local prefix="$(makeBrowseUrlPrefix "$(originUrl "$filename")")"
-    local rootedFilename="$(git ls-files --full-name "$(basename "$filename")")"
+    local prefix="$(makeBrowseUrlPrefix "$(originUrl "$FILENAME")")"
+    local rootedFilename="$(git ls-files --full-name "$(basename "$FILENAME")")"
     cd "$originalDirectory"
 
     if [[ -z "$prefix" ]]; then
@@ -102,10 +100,12 @@ makeGitBrowseLink() {
         return 3
     fi
 
-    local anchor="$(makePositionAnchor "$position")"
+    local anchor="$(makePositionAnchor "$POSITION")"
 
     printf %s/%s/%s%s\\n "$prefix" "$head" "$rootedFilename" "$anchor"
 }
 
-makeGitBrowseLink "$1" "$2"
+FILENAME="$1"
+POSITION="$2"
+makeGitBrowseLink
 exit $?

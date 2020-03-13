@@ -7,7 +7,7 @@ PREFERRED_REMOTES='upstream origin'
 
 isReachable() {
     local from="$1" to="$2"
-    [[ $(git merge-base $from $to) == $(git rev-parse --verify $from) ]]
+    [ "$(git merge-base $from $to)" == "$(git rev-parse --verify $from)" ]
 }
 
 reachableFromRemote() {
@@ -41,7 +41,7 @@ originUrl() {
     local head=$(git rev-parse HEAD)
 
     local bestRemote=$(bestRemote $head)
-    if [[ -z "$bestRemote" ]]; then
+    if [ -z "$bestRemote" ]; then
         printf 'Cannot find a reachable remote.\n' >&2
         exit 2
     fi
@@ -59,16 +59,16 @@ makeBrowseUrlPrefix() {
 
 makePositionAnchor() {
     local position="$1"
-    if [[ -z "$position" ]]; then
+    if [ -z "$position" ]; then
         return 0
     fi
     local startLine=$(printf %s\\n "$position" |sed -ne 's/^\([0-9]*\)\..*$/\1/p')
     local endLine=$(printf %s\\n "$position" |sed -ne 's/^.*,\([0-9]*\)\..*$/\1/p')
-    if [[ $startLine -eq $endLine ]]; then
+    if [ $startLine -eq $endLine ]; then
         printf '#L%d\n' "$startLine"
         return 0
     fi
-    if [[ $startLine -gt $endLine ]]; then
+    if [ $startLine -gt $endLine ]; then
         local tmp=$startLine
         startLine=$endLine
         endLine=$tmp
@@ -77,11 +77,11 @@ makePositionAnchor() {
 }
 
 makeGitBrowseLink() {
-    if [[ ! -e "$FILENAME" ]]; then
+    if [ ! -e "$FILENAME" ]; then
         printf 'git-browse-link: %s: No such file or directory\n' "$FILENAME" >&2
         return 1
     fi
-    if [[ -d "$FILENAME" ]]; then
+    if [ -d "$FILENAME" ]; then
         printf 'git-browse-link: %s is a directory\n' "$FILENAME" >&2
         return 1
     fi
@@ -94,7 +94,7 @@ makeGitBrowseLink() {
     local rootedFilename="$(git ls-files --full-name "$(basename "$FILENAME")")"
     cd "$originalDirectory"
 
-    if [[ -z "$prefix" ]]; then
+    if [ -z "$prefix" ]; then
         printf 'git-browse-link: cannot find a remote with commit %s\n' "$head" >&2
         return 3
     fi

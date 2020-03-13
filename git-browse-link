@@ -5,9 +5,9 @@
 
 PREFERRED_REMOTES='upstream origin'
 
+# $1=from, $2=to
 isReachable() {
-    local from="$1" to="$2"
-    [ "$(git merge-base $from $to)" == "$(git rev-parse --verify $from)" ]
+    [ "$(git merge-base $1 $2)" == "$(git rev-parse --verify $1)" ]
 }
 
 reachableFromRemote() {

@@ -50,8 +50,7 @@ originUrl() {
 }
 
 makeBrowseUrlPrefix() {
-    local originUrl="$1"
-    printf %s\\n "$originUrl" |sed -e '
+    printf %s\\n "$1" |sed -e '
         s/\.git$//
         s/^git@github\.com:\([^/]*\)\/\([^/]*\)$/https:\/\/github.com\/\1\/\2\/blob/
         s/^https:\/\/github\.com\/\([^/]*\)\/\([^/]*\)$/https:\/\/github.com\/\1\/\2\/blob/

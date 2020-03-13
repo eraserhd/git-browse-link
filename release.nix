@@ -6,8 +6,11 @@ in {
   test = pkgs.stdenv.mkDerivation {
     name = "tests";
     src = ./tests;
-    buildInputs = [ pkgs.git git-browse-link ];
-    buildPhase = "./run-tests.sh";
+    buildInputs = [ pkgs.git git-browse-link pkgs.shellcheck ];
+    buildPhase = ''
+      shellcheck -s sh -i SC2039 $(command -v git-browse-link)
+      ./run-tests.sh
+    '';
     installPhase = "touch $out";
   };
 }

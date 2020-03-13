@@ -11,11 +11,11 @@ isReachable() {
 }
 
 reachableFromRemote() {
-    local head="$1" remote="$2" branch
-    for branch in $(git branch -r); do
-        case "$branch" in
+    # $1=head, $2=remote
+    for reachableFromRemote_branch in $(git branch -r); do
+        case "$reachableFromRemote_branch" in
         "$remote"/*)
-            if isReachable $head $branch; then
+            if isReachable $head $reachableFromRemote_branch; then
                 return 0
             fi
             ;;
@@ -49,6 +49,7 @@ originUrl() {
 }
 
 makeBrowseUrlPrefix() {
+    # $1=origin URL
     printf %s\\n "$1" |sed -e '
         s/\.git$//
         s/^git@github\.com:\([^/]*\)\/\([^/]*\)$/https:\/\/github.com\/\1\/\2\/blob/
@@ -57,12 +58,12 @@ makeBrowseUrlPrefix() {
 }
 
 makePositionAnchor() {
-    local position="$1"
-    if [ -z "$position" ]; then
+    # $1=position
+    if [ -z "$1" ]; then
         return 0
     fi
-    local startLine=$(printf %s\\n "$position" |sed -ne 's/^\([0-9]*\)\..*$/\1/p')
-    local endLine=$(printf %s\\n "$position" |sed -ne 's/^.*,\([0-9]*\)\..*$/\1/p')
+    local startLine=$(printf %s\\n "$1" |sed -ne 's/^\([0-9]*\)\..*$/\1/p')
+    local endLine=$(printf %s\\n "$1" |sed -ne 's/^.*,\([0-9]*\)\..*$/\1/p')
     if [ $startLine -eq $endLine ]; then
         printf '#L%d\n' "$startLine"
         return 0

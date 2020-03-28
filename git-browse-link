@@ -5,32 +5,31 @@
 
 PREFERRED_REMOTES='upstream origin'
 
-isReachable() {
+reachableFromRemote() {
     gxi -e '
-        (import :std/misc/process)
+        (import :std/misc/ports
+                :std/misc/process)
 
         (def (reachable? from to)
           (string=? (run-process ["git" "merge-base" from to])
                     (run-process ["git" "rev-parse" "--verify" from])))
 
+        (def (remote-branches remote)
+          (run-process ["git" "for-each-ref" "--format=%(refname)"
+                        (string-append "refs/remotes/" remote)]
+                       coprocess: read-all-as-lines))
 
-        (if (not (reachable? "'$1'" "'$2'"))
+        (def (reachable-from-remote? head remote)
+          (call/cc (lambda (cont)
+                     (for-each (lambda (branch)
+                                 (if (reachable? head branch)
+                                   (cont #t)))
+                               (remote-branches remote))
+                     #f)))
+
+        (if (not (reachable-from-remote? "'$1'" "'$2'"))
           (exit 1))
     '
-}
-
-reachableFromRemote() {
-    # $1=head, $2=remote
-    for reachableFromRemote_branch in $(git branch -r); do
-        case "$reachableFromRemote_branch" in
-        "$2"/*)
-            if isReachable "$1" "$reachableFromRemote_branch"; then
-                return 0
-            fi
-            ;;
-        esac
-    done
-    return 1
 }
 
 bestRemote() {

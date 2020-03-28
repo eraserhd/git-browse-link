@@ -46,11 +46,21 @@ originUrl() {
 }
 
 makeBrowseUrlPrefix() {
-    # $1=origin URL
-    printf %s\\n "$1" |sed -e '
-        s/\.git$//
-        s/^git@github\.com:\([^/]*\)\/\([^/]*\)$/https:\/\/github.com\/\1\/\2\/blob/
-        s/^https:\/\/github\.com\/\([^/]*\)\/\([^/]*\)$/https:\/\/github.com\/\1\/\2\/blob/
+    gxi -e '
+        (import :std/format
+                :std/misc/string
+                :std/pregexp
+                :std/sugar)
+
+        (def (make-browse-url-prefix origin-url)
+          (def github (match <> ([_ owner repo] (format "https://github.com/~a/~a/blob" owner repo))))
+          (cond
+            ((pregexp-match "^git@github\\.com:([^/]*)/([^/]*?)(?:\\.git)?$" origin-url)     => github)
+            ((pregexp-match "^https://github\\.com/([^/]*)/([^/]*?)(?:\\.git)?$" origin-url) => github)
+            (else
+             origin-url)))
+
+        (displayln (make-browse-url-prefix "'$1'"))
     '
 }
 

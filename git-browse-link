@@ -33,7 +33,8 @@ bestRemote() {
                      (for-each (lambda (remote)
                                  (if (reachable-from-remote? head remote)
                                    (cont remote)))
-                               ["upstream" "origin" (remotes) ...]))))
+                               ["upstream" "origin" (remotes) ...])
+                     #f)))
 
         (displayln (best-remote "'$1'"))
     '

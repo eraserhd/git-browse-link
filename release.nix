@@ -6,10 +6,10 @@ in {
   test = pkgs.stdenv.mkDerivation {
     name = "tests";
     src = ./tests;
-    buildInputs = [ pkgs.git git-browse-link pkgs.shellcheck ];
+    buildInputs = [ pkgs.git git-browse-link pkgs.shellcheck pkgs.gerbil ];
     buildPhase = ''
       shellcheck -s sh -i SC2039 $(command -v git-browse-link)
-      ./run-tests.sh
+      gxi run-tests.ss
     '';
     installPhase = "touch $out";
   };

@@ -3,9 +3,7 @@
 # Syntax is `git browse-link FILE [POSITION]`
 #
 
-PREFERRED_REMOTES='upstream origin'
-
-reachableFromRemote() {
+bestRemote() {
     gxi -e '
         (import :std/misc/ports
                 :std/misc/process)
@@ -27,20 +25,18 @@ reachableFromRemote() {
                                (remote-branches remote))
                      #f)))
 
-        (if (not (reachable-from-remote? "'$1'" "'$2'"))
-          (exit 1))
-    '
-}
+        (def (remotes)
+          (run-process ["git" "remote"] coprocess: read-all-as-lines))
 
-bestRemote() {
-    # $1=head
-    for bestRemote_remote in $PREFERRED_REMOTES $(git remote); do
-        if reachableFromRemote "$1" "$bestRemote_remote"; then
-            printf %s\\n "$bestRemote_remote"
-            return 0
-        fi
-    done
-    return 1
+        (def (best-remote head)
+          (call/cc (lambda (cont)
+                     (for-each (lambda (remote)
+                                 (if (reachable-from-remote? head remote)
+                                   (cont remote)))
+                               ["upstream" "origin" (remotes) ...]))))
+
+        (displayln (best-remote "'$1'"))
+    '
 }
 
 originUrl() {

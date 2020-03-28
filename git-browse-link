@@ -55,22 +55,20 @@ makeBrowseUrlPrefix() {
 }
 
 makePositionAnchor() {
-    # $1=position
-    if [ -z "$1" ]; then
-        return 0
-    fi
-    makePositionAnchor_startLine=$(printf %s\\n "$1" |sed -ne 's/^\([0-9]*\)\..*$/\1/p')
-    makePositionAnchor_endLine=$(printf %s\\n "$1" |sed -ne 's/^.*,\([0-9]*\)\..*$/\1/p')
-    if [ "$makePositionAnchor_startLine" -eq "$makePositionAnchor_endLine" ]; then
-        printf '#L%d\n' "$makePositionAnchor_startLine"
-        return 0
-    fi
-    if [ "$makePositionAnchor_startLine" -gt "$makePositionAnchor_endLine" ]; then
-        makePositionAnchor_tmp="$makePositionAnchor_startLine"
-        makePositionAnchor_startLine="$makePositionAnchor_endLine"
-        makePositionAnchor_endLine="$makePositionAnchor_tmp"
-    fi
-    printf '#L%d-L%d\n' "$makePositionAnchor_startLine" "$makePositionAnchor_endLine"
+    gxi -e '
+      (import :std/format
+              :std/pregexp)
+      (def (make-position-anchor position)
+        (match (pregexp-match "^(\\d+)\\.\\d+,(\\d+)\\." position)
+          ([_ (apply string->number line1) (apply string->number line2)]
+           (cond
+             ((=  line1 line2) (format "#L~a" line1))
+             ((<= line1 line2) (format "#L~a-L~a" line1 line2))
+             (else             (format "#L~a-L~a" line2 line1))))
+          (#f "")))
+
+      (displayln (make-position-anchor "'$1'"))
+    '
 }
 
 makeGitBrowseLink() {

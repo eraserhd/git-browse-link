@@ -3,55 +3,8 @@
 # Syntax is `git browse-link FILE [POSITION]`
 #
 
-originUrl() {
-    gxi -e '
-        (import :std/misc/ports
-                :std/misc/process
-                :std/misc/string)
-
-        (def (reachable? from to)
-          (string=? (run-process ["git" "merge-base" from to])
-                    (run-process ["git" "rev-parse" "--verify" from])))
-
-        (def (remote-branches remote)
-          (run-process ["git" "for-each-ref" "--format=%(refname)"
-                        (string-append "refs/remotes/" remote)]
-                       coprocess: read-all-as-lines))
-
-        (def (reachable-from-remote? head remote)
-          (call/cc (lambda (cont)
-                     (for-each (lambda (branch)
-                                 (if (reachable? head branch)
-                                   (cont #t)))
-                               (remote-branches remote))
-                     #f)))
-
-        (def (remotes)
-          (run-process ["git" "remote"] coprocess: read-all-as-lines))
-
-        (def (best-remote head)
-          (call/cc (lambda (cont)
-                     (for-each (lambda (remote)
-                                 (if (reachable-from-remote? head remote)
-                                   (cont remote)))
-                               ["upstream" "origin" (remotes) ...])
-                     #f)))
-
-        (def (origin-url)
-          (alet* ((head   (string-trim-eol (run-process ["git" "rev-parse" "HEAD"])))
-                  (remote (best-remote head)))
-            (run-process ["git" "remote" "get-url" remote])))
-
-        (displayln (origin-url))
-    '
-}
-
 makeGitBrowseLink() {
     makeGitBrowseLink_head="$(git rev-parse HEAD)"
-    if [ -z "$(originUrl)" ]; then
-        printf 'git-browse-link: cannot find a remote with commit %s\n' "$makeGitBrowseLink_head" >&2
-        return 3
-    fi
     gxi -e '
         (import :std/format
                 :std/misc/ports
@@ -110,11 +63,15 @@ makeGitBrowseLink() {
             (#f "")))
 
         (def (make-git-browse-link)
-          (format "~a/~a/~a~a"
-                  (make-browse-url-prefix (origin-url))
-                  "'$makeGitBrowseLink_head'"
-                  "'$(git ls-files --full-name "$FILENAME")'"
-                  (make-position-anchor "'$POSITION'")))
+          (let ((origin (origin-url)))
+            (when (not origin)
+              (printf "git-browse-link: cannot find a remote with commit ~a~n" "'$makeGitBrowseLink_head'")
+              (exit 3))
+            (format "~a/~a/~a~a"
+                    (make-browse-url-prefix origin)
+                    "'$makeGitBrowseLink_head'"
+                    "'$(git ls-files --full-name "$FILENAME")'"
+                    (make-position-anchor "'$POSITION'"))))
 
         (displayln (make-git-browse-link))
     '

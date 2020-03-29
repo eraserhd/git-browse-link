@@ -1,1 +1,3 @@
 = git-browse-link
+
+Obsolete, see https://github.com/eraserhd/gitout

@@ -66,7 +66,7 @@ makeGitBrowseLink() {
         (def (full-path-within-repo filename)
           (string-trim-eol (run-process ["git" "ls-files" "--full-name" filename])))
 
-        (def (make-git-browse-link)
+        (def (make-git-browse-link filename)
           (let ((origin (origin-url)))
             (when (not origin)
               (printf "git-browse-link: cannot find a remote with commit ~a~n" (head))
@@ -74,10 +74,10 @@ makeGitBrowseLink() {
             (format "~a/~a/~a~a"
                     (make-browse-url-prefix origin)
                     (head)
-                    (full-path-within-repo "'$FILENAME'")
+                    (full-path-within-repo filename)
                     (make-position-anchor "'$POSITION'"))))
 
-        (displayln (make-git-browse-link))
+        (displayln (make-git-browse-link "'$FILENAME'"))
     '
 }
 

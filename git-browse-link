@@ -4,7 +4,6 @@
 #
 
 makeGitBrowseLink() {
-    makeGitBrowseLink_head="$(git rev-parse HEAD)"
     gxi -e '
         (import :std/format
                 :std/misc/ports
@@ -39,9 +38,11 @@ makeGitBrowseLink() {
                                    (cont remote)))
                                ["upstream" "origin" (remotes) ...])
                      #f)))
+        (def (head)
+          (string-trim-eol (run-process ["git" "rev-parse" "HEAD"])))
 
         (def (origin-url)
-          (alet* ((head   (string-trim-eol (run-process ["git" "rev-parse" "HEAD"])))
+          (alet* ((head   (head))
                   (remote (best-remote head)))
             (string-trim-eol (run-process ["git" "remote" "get-url" remote]))))
 
@@ -65,11 +66,11 @@ makeGitBrowseLink() {
         (def (make-git-browse-link)
           (let ((origin (origin-url)))
             (when (not origin)
-              (printf "git-browse-link: cannot find a remote with commit ~a~n" "'$makeGitBrowseLink_head'")
+              (printf "git-browse-link: cannot find a remote with commit ~a~n" (head))
               (exit 3))
             (format "~a/~a/~a~a"
                     (make-browse-url-prefix origin)
-                    "'$makeGitBrowseLink_head'"
+                    (head)
                     "'$(git ls-files --full-name "$FILENAME")'"
                     (make-position-anchor "'$POSITION'"))))
 

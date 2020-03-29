@@ -5,10 +5,6 @@
 
 FILENAME="$1"
 POSITION="$2"
-if [ -d "$FILENAME" ]; then
-    printf 'git-browse-link: %s is a directory\n' "$FILENAME" >&2
-    return 1
-fi
 
 cd "$(dirname "$FILENAME")" || exit $?
 FILENAME="$(basename "$FILENAME")"
@@ -90,7 +86,7 @@ gxi -e '
   (when (not (file-exists? filename))
     (printf "git-browse-link: ~a: No such file or directory~n" filename)
     (exit 1))
-  (when (file-directory? filename))
+  (when (eq? '"'"'directory (file-type filename))
     (printf "git-browse-link: ~a is a directory~n" filename)
     (exit 1))
   (displayln (make-git-browse-link filename position)))

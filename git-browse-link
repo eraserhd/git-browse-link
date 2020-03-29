@@ -46,27 +46,9 @@ originUrl() {
     '
 }
 
-makeBrowseUrlPrefix() {
-    gxi -e '
-        (import :std/format
-                :std/pregexp)
-
-        (def (make-browse-url-prefix origin-url)
-          (def github (match <> ([_ owner repo] (format "https://github.com/~a/~a/blob" owner repo))))
-          (cond
-            ((pregexp-match "^git@github\\.com:([^/]*)/([^/]*?)(?:\\.git)?$" origin-url)     => github)
-            ((pregexp-match "^https://github\\.com/([^/]*)/([^/]*?)(?:\\.git)?$" origin-url) => github)
-            (else
-             origin-url)))
-
-        (displayln (make-browse-url-prefix "'$1'"))
-    '
-}
-
 makeGitBrowseLink() {
     makeGitBrowseLink_head="$(git rev-parse HEAD)"
-    makeGitBrowseLink_prefix="$(makeBrowseUrlPrefix "$(originUrl)")"
-    if [ -z "$makeGitBrowseLink_prefix" ]; then
+    if [ -z "$(originUrl)" ]; then
         printf 'git-browse-link: cannot find a remote with commit %s\n' "$makeGitBrowseLink_head" >&2
         return 3
     fi

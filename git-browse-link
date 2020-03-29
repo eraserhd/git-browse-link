@@ -5,10 +5,6 @@
 
 FILENAME="$1"
 POSITION="$2"
-if [ ! -e "$FILENAME" ]; then
-    printf 'git-browse-link: %s: No such file or directory\n' "$FILENAME" >&2
-    return 1
-fi
 if [ -d "$FILENAME" ]; then
     printf 'git-browse-link: %s is a directory\n' "$FILENAME" >&2
     return 1
@@ -91,6 +87,8 @@ gxi -e '
             (make-position-anchor position))))
 
 (def (main filename position)
+  (when (not (file-exists? filename))
+    (printf "git-browse-link: ~a: No such file or directory~n" filename))
   (displayln (make-git-browse-link filename position)))
 
 (main "'$FILENAME'" "'$POSITION'")

@@ -89,11 +89,14 @@ makeGitBrowseLink() {
         printf 'git-browse-link: cannot find a remote with commit %s\n' "$makeGitBrowseLink_head" >&2
         return 3
     fi
-    printf %s/%s/%s%s\\n \
-        "$makeGitBrowseLink_prefix" \
-        "$makeGitBrowseLink_head" \
-        "$(git ls-files --full-name "$FILENAME")" \
-        "$(makePositionAnchor "$POSITION")"
+    gxi -e '
+        (import :std/format)
+        (printf "~a/~a/~a~a"
+                "'$makeGitBrowseLink_prefix'"
+                "'$makeGitBrowseLink_head'"
+                "'$(git ls-files --full-name "$FILENAME")'"
+                "'$(makePositionAnchor "$POSITION")'")
+    '
 }
 
 FILENAME="$1"

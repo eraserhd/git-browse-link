@@ -6,9 +6,6 @@
 FILENAME="$1"
 POSITION="$2"
 
-cd "$(dirname "$FILENAME")" || exit $?
-FILENAME="$(basename "$FILENAME")"
-
 gxi -e '
 (import :std/format
         :std/misc/ports
@@ -83,13 +80,16 @@ gxi -e '
             (make-position-anchor position))))
 
 (def (main filename position)
-  (when (not (file-exists? filename))
-    (printf "git-browse-link: ~a: No such file or directory~n" filename)
-    (exit 1))
-  (when (eq? '"'"'directory (file-type filename))
-    (printf "git-browse-link: ~a is a directory~n" filename)
-    (exit 1))
-  (displayln (make-git-browse-link filename position)))
+  (let ((working-dir (path-expand (or (path-directory filename) ".")))
+        (basename    (path-strip-directory filename)))
+    (when (not (file-exists? filename))
+      (printf "git-browse-link: ~a: No such file or directory~n" filename)
+      (exit 1))
+    (when (eq? '"'"'directory (file-type filename))
+      (printf "git-browse-link: ~a is a directory~n" filename)
+      (exit 1))
+    (parameterize ((current-directory working-dir))
+      (displayln (make-git-browse-link basename position)))))
 
 (main "'$FILENAME'" "'$POSITION'")
 '

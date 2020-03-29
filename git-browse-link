@@ -65,23 +65,6 @@ makeBrowseUrlPrefix() {
     '
 }
 
-makePositionAnchor() {
-    gxi -e '
-      (import :std/format
-              :std/pregexp)
-      (def (make-position-anchor position)
-        (match (pregexp-match "^(\\d+)\\.\\d+,(\\d+)\\." position)
-          ([_ (apply string->number line1) (apply string->number line2)]
-           (cond
-             ((=  line1 line2) (format "#L~a" line1))
-             ((<= line1 line2) (format "#L~a-L~a" line1 line2))
-             (else             (format "#L~a-L~a" line2 line1))))
-          (#f "")))
-
-      (displayln (make-position-anchor "'$1'"))
-    '
-}
-
 makeGitBrowseLink() {
     makeGitBrowseLink_head="$(git rev-parse HEAD)"
     makeGitBrowseLink_prefix="$(makeBrowseUrlPrefix "$(originUrl)")"
@@ -90,13 +73,24 @@ makeGitBrowseLink() {
         return 3
     fi
     gxi -e '
-        (import :std/format)
+        (import :std/format
+                :std/pregexp)
+
+        (def (make-position-anchor position)
+          (match (pregexp-match "^(\\d+)\\.\\d+,(\\d+)\\." position)
+            ([_ (apply string->number line1) (apply string->number line2)]
+             (cond
+               ((=  line1 line2) (format "#L~a" line1))
+               ((<= line1 line2) (format "#L~a-L~a" line1 line2))
+               (else             (format "#L~a-L~a" line2 line1))))
+            (#f "")))
+
         (def (make-git-browse-link)
           (format "~a/~a/~a~a"
                   "'$makeGitBrowseLink_prefix'"
                   "'$makeGitBrowseLink_head'"
                   "'$(git ls-files --full-name "$FILENAME")'"
-                  "'$(makePositionAnchor "$POSITION")'"))
+                  (make-position-anchor "'$POSITION'")))
 
         (displayln (make-git-browse-link))
     '

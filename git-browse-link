@@ -3,10 +3,11 @@
 # Syntax is `git browse-link FILE [POSITION]`
 #
 
-bestRemote() {
+originUrl() {
     gxi -e '
         (import :std/misc/ports
-                :std/misc/process)
+                :std/misc/process
+                :std/misc/string)
 
         (def (reachable? from to)
           (string=? (run-process ["git" "merge-base" from to])
@@ -36,18 +37,13 @@ bestRemote() {
                                ["upstream" "origin" (remotes) ...])
                      #f)))
 
-        (displayln (best-remote "'$1'"))
-    '
-}
+        (def (origin-url)
+          (alet* ((head   (string-trim-eol (run-process ["git" "rev-parse" "HEAD"])))
+                  (remote (best-remote head)))
+            (run-process ["git" "remote" "get-url" remote])))
 
-originUrl() {
-    originUrl_head=$(git rev-parse HEAD)
-    originUrl_bestRemote=$(bestRemote "$originUrl_head")
-    if [ -z "$originUrl_bestRemote" ]; then
-        printf 'Cannot find a reachable remote.\n' >&2
-        exit 2
-    fi
-    git remote get-url "$originUrl_bestRemote"
+        (displayln (origin-url))
+    '
 }
 
 makeBrowseUrlPrefix() {

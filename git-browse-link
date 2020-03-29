@@ -90,6 +90,9 @@ gxi -e '
             (full-path-within-repo filename)
             (make-position-anchor position))))
 
-(displayln (make-git-browse-link "'$FILENAME'" "'$POSITION'"))
+(def (main filename position)
+  (displayln (make-git-browse-link filename position)))
+
+(main "'$FILENAME'" "'$POSITION'")
 '
 exit $?

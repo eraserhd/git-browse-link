@@ -49,9 +49,7 @@ originUrl() {
 makeBrowseUrlPrefix() {
     gxi -e '
         (import :std/format
-                :std/misc/string
-                :std/pregexp
-                :std/sugar)
+                :std/pregexp)
 
         (def (make-browse-url-prefix origin-url)
           (def github (match <> ([_ owner repo] (format "https://github.com/~a/~a/blob" owner repo))))
@@ -76,6 +74,14 @@ makeGitBrowseLink() {
         (import :std/format
                 :std/pregexp)
 
+        (def (make-browse-url-prefix origin-url)
+          (def github (match <> ([_ owner repo] (format "https://github.com/~a/~a/blob" owner repo))))
+          (cond
+            ((pregexp-match "^git@github\\.com:([^/]*)/([^/]*?)(?:\\.git)?$" origin-url)     => github)
+            ((pregexp-match "^https://github\\.com/([^/]*)/([^/]*?)(?:\\.git)?$" origin-url) => github)
+            (else
+             origin-url)))
+
         (def (make-position-anchor position)
           (match (pregexp-match "^(\\d+)\\.\\d+,(\\d+)\\." position)
             ([_ (apply string->number line1) (apply string->number line2)]
@@ -87,7 +93,7 @@ makeGitBrowseLink() {
 
         (def (make-git-browse-link)
           (format "~a/~a/~a~a"
-                  "'$makeGitBrowseLink_prefix'"
+                  (make-browse-url-prefix "'$(originUrl)'")
                   "'$makeGitBrowseLink_head'"
                   "'$(git ls-files --full-name "$FILENAME")'"
                   (make-position-anchor "'$POSITION'")))

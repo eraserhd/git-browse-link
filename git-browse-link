@@ -91,11 +91,14 @@ makeGitBrowseLink() {
     fi
     gxi -e '
         (import :std/format)
-        (printf "~a/~a/~a~a"
-                "'$makeGitBrowseLink_prefix'"
-                "'$makeGitBrowseLink_head'"
-                "'$(git ls-files --full-name "$FILENAME")'"
-                "'$(makePositionAnchor "$POSITION")'")
+        (def (make-git-browse-link)
+          (format "~a/~a/~a~a"
+                  "'$makeGitBrowseLink_prefix'"
+                  "'$makeGitBrowseLink_head'"
+                  "'$(git ls-files --full-name "$FILENAME")'"
+                  "'$(makePositionAnchor "$POSITION")'"))
+
+        (displayln (make-git-browse-link))
     '
 }
 

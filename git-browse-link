@@ -88,7 +88,11 @@ gxi -e '
 
 (def (main filename position)
   (when (not (file-exists? filename))
-    (printf "git-browse-link: ~a: No such file or directory~n" filename))
+    (printf "git-browse-link: ~a: No such file or directory~n" filename)
+    (exit 1))
+  (when (file-directory? filename))
+    (printf "git-browse-link: ~a is a directory~n" filename)
+    (exit 1))
   (displayln (make-git-browse-link filename position)))
 
 (main "'$FILENAME'" "'$POSITION'")

@@ -1,12 +1,8 @@
-#!/bin/sh
-#
-# Syntax is `git browse-link FILE [POSITION]`
-#
+#!/usr/bin/env gxi
+;
+; Syntax is `git browse-link FILE [POSITION]`
+;
 
-FILENAME="$1"
-POSITION="$2"
-
-gxi -e '
 (import :std/format
         :std/misc/ports
         :std/misc/process
@@ -79,18 +75,14 @@ gxi -e '
             (full-path-within-repo filename)
             (make-position-anchor position))))
 
-(def (main filename position)
+(def (main filename (position ""))
   (let ((working-dir (path-expand (or (path-directory filename) ".")))
         (basename    (path-strip-directory filename)))
     (when (not (file-exists? filename))
       (printf "git-browse-link: ~a: No such file or directory~n" filename)
       (exit 1))
-    (when (eq? '"'"'directory (file-type filename))
+    (when (eq? 'directory (file-type filename))
       (printf "git-browse-link: ~a is a directory~n" filename)
       (exit 1))
     (parameterize ((current-directory working-dir))
       (displayln (make-git-browse-link basename position)))))
-
-(main "'$FILENAME'" "'$POSITION'")
-'
-exit $?
